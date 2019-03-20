@@ -42,7 +42,7 @@ if (inIframe()) {
             this.MAX_FEED_RETRIES = 4;
             this.feed_retries = 0;
 
-            this.start = function start() {
+            this.start = function() {
                 console.log(this.frame_id + "-> Start Job Parser called")
                 if (this.isLinkedInPage(windowLocation)) {
                     console.log(this.frame_id + "-> IsLinkedIn? true ->" + windowLocation)
@@ -58,25 +58,24 @@ if (inIframe()) {
             }
 
             this.getJobs = function() {
-                var $feed = $('.jobs-search-results__list').children();
+                var $jobList = $('.jobs-search-results__list').children();
 
-                if ($feed.length !== 0) {
+                if ($jobList.length !== 0) {
                     console.log(this.frame_id + "--> Found Jobs Feed");
-                    return $feed;
+                    return $jobList;
                 }
 
                 console.log(this.frame_id + "--> Could not find jobs feed");
                 return [];
             }
 
-            this.parseLinkedIn = function parseLinkedIn() {
-
+            this.parseLinkedIn = function() {
                 console.log(this.frame_id + "--> Parsing Links");
 
                 if (this.feed_retries <= this.MAX_RETRIES) {
                     var $jobElements = this.getJobs();
                     if ($jobElements.length == 0) {
-                        console.log(this.frame_id + "Job list = 0; Will Retry");
+                        console.log(this.frame_id + "--> Job list = 0; Will Retry");
                         this.feed_retries++;
                         var that = this;
                         setTimeout(function() {
@@ -84,15 +83,14 @@ if (inIframe()) {
                             window.requestAnimationFrame(callback)
                         }, 1000);
                     } else {
-                        console.log(this.frame_id + "Jobs length = " + $jobElements.length);
+                        console.log(this.frame_id + "--> Jobs length = " + $jobElements.length);
                         this.getJobTitleAndLink();
                     }
                 }
             }
 
             this.getJobTitleAndLink = function() {
-
-                console.log('Attempting to get rendered jobs');
+                console.log('--> Attempting to get rendered jobs');
                 var self = this;
                 var finishedParsingLinks = false;
 
@@ -108,24 +106,27 @@ if (inIframe()) {
 
                 this.previousJobCount = $jobElements.length;
 
-                var $jobLinkTags = $jobElements.find('.job-card-search__link-wrapper.js-focusable-card.ember-view').filter(':odd');
-                console.log('Job link length = ' + $jobLinkTags.length);
+                // Query returns duplicates of each link, so filtering by odd to grab just one version of the link
+                var $jobLinksAndTitles = $jobElements.find('.job-card-search__link-wrapper.js-focusable-card.ember-view').filter(':odd');
+                console.log('--> Job link length = ' + $jobLinksAndTitles.length);
 
+                // Jobs must be scrolled-through to render the elements containing title/links. Compare total job count
+                // ($jobElements) to number of associated links ($jobLinkTags)-- if not equal, scroll through page.
                 if (this.currentRetriesCount <= this.MAX_RETRIES) {
-                    if ($jobElements.length !== $jobLinkTags.length) {
+                    if ($jobElements.length !== $jobLinksAndTitles.length) {
                         this.currentRetriesCount++;
                         $('html, body').animate({
                             scrollTop: document.body.scrollHeight
-                        }, 500, 'linear');
+                        }, 100, 'linear');
                         $('html, body').animate({
                             scrollTop: -document.body.scrollHeight
-                        }, 500, 'linear', self.parseLinkedIn.bind(self));
+                        }, 100, 'linear', self.parseLinkedIn.bind(self));
                         return;
                     }
                 }
 
-                if ($jobLinkTags) {
-                    $jobLinkTags.each(function() {
+                if ($jobLinksAndTitles) {
+                    $jobLinksAndTitles.each(function() {
                         var $this = $(this);
                         var jobLink = $this.attr('href');
                         var jobTitle = $this.text().trim();
@@ -144,7 +145,6 @@ if (inIframe()) {
                     });
                 }
 
-                //console.log(this.frame_id + "-> scrolling to " + document.body.scrollHeight);
                 console.log(this.frame_id + "-> Finished Parsing Page? " + finishedParsingLinks);
                 self.getLocationOrParse(finishedParsingLinks);
             };
@@ -160,7 +160,7 @@ if (inIframe()) {
                         return false;
                     }
                 } else {
-                    console.log('Jobs not logged -- staying on page')
+                    console.log('--> Jobs not logged -- staying on page')
                     return;
                 }
 
@@ -183,13 +183,13 @@ if (inIframe()) {
                     });
 
                 } else {
-                    console.log("No next button");
+                    console.log("--> No next button");
                     return false;
                 }
             }
 
 
-            this.getLocationOrParse = function getLocationOrParse(finishedParsingLinks) {
+            this.getLocationOrParse = function(finishedParsingLinks) {
                 if ((this.jobs.length > 0) && (finishedParsingLinks || this.currentRetriesCount > this.MAX_RETRIES)) {
                     this.getLocations(0, 0);
                 } else if (this.currentRetriesCount <= this.MAX_RETRIES) {
@@ -198,7 +198,7 @@ if (inIframe()) {
             };
 
             this.getLocations = function(index, retry) {
-                console.log('getLocation ' + index + ' ' + retry);
+                console.log('--> getLocation ' + index + ' ' + retry);
 
                 if (index >= this.jobs.length) {
                     if (this.getNextButton()) {
@@ -215,7 +215,7 @@ if (inIframe()) {
                 if ($jobLocations.length <= 0) {
                     console.log('No Locations');
                 } else {
-                    console.log('Found Locations');
+                    console.log('--> Found Locations');
                 }
 
                 if ($jobLocations) {
@@ -226,18 +226,18 @@ if (inIframe()) {
                     }
                     this.getLocations(++index, 0);
                 } else if (retry < 3) {
-                    console.log('retry finding location ' + index);
+                    console.log('--> retry finding location ' + index);
                     this.getLocations(index, ++retry);
                 } else {
-                    console.log('skipping location ' + index);
+                    console.log('--> skipping location ' + index);
                     this.getLocations(++index, 0);
                 }
             };
 
-            this.sendJobs = function sendJobs() {
+            this.sendJobs = function() {
                 for (var i = 0; i < this.jobs.length; i++) {
                     var job = this.jobs[i];
-                    console.log("sending " + i + " " + job.jobLink);
+                    console.log("--> sending " + i + " " + job.jobLink);
                     var consolidatedTitle = job.jobTitle + ": " + job.jobLocation;
                     sendLinkData(consolidatedTitle, job.jobLink);
                 }

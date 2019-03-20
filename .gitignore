@@ -1,5 +1,6 @@
 *.html
 App/RealScraper.js
+.gitignore
 
 # User-specific stuff
 .idea/**/workspace.xml
