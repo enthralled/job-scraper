@@ -116,10 +116,10 @@ if (inIframe()) {
                         this.currentRetriesCount++;
                         $('html, body').animate({
                             scrollTop: document.body.scrollHeight
-                        }, 2000, 'linear');
+                        }, 500, 'linear');
                         $('html, body').animate({
                             scrollTop: -document.body.scrollHeight
-                        }, 2000, 'linear', self.parseLinkedIn.bind(self));
+                        }, 500, 'linear', self.parseLinkedIn.bind(self));
                         return;
                     }
                 }
