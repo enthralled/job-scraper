@@ -36,8 +36,8 @@ if (inIframe()) {
             this.MAX_RETRIES = 4;
             this.currentRetriesCount = 0;
             this.previousJobCount = 0;
-            this.locationCount = 0
-            this.sendJobsCount = 0
+            this.locationCount = 0;
+            this.sendJobsCount = 0;
 
             // this retry logic is distinct. if we match an iFrame inside an iFrame with the Linked iN Domain, it could
             // be an add... if we don't exit after X tries, the extension will get stuck.
@@ -132,7 +132,7 @@ if (inIframe()) {
                     $jobLinksAndTitles.each(function() {
                         var $this = $(this);
                         var jobLink = $this.attr('href');
-                        var jobTitle = $this.text().trim();
+                        var jobTitle = $this.text().replace('Promoted', '').replace(/\s+/g, " ").trim();
                         var jobID = $this.attr('id');
                         if (!self.jobMap[jobID]) {
                             self.jobs.push({
@@ -345,4 +345,5 @@ function rel_to_abs(url) {
     /* Escape certain characters to prevent XSS */
     url = url.replace(/\.$/, "").replace(/\/\./g, "").replace(/"/g, "%22").replace(/'/g, "%27").replace(/</g, "%3C").replace(/>/g, "%3E");
     return encodeURI(url);
+}
 }
