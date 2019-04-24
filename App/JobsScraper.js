@@ -346,4 +346,3 @@ function rel_to_abs(url) {
     url = url.replace(/\.$/, "").replace(/\/\./g, "").replace(/"/g, "%22").replace(/'/g, "%27").replace(/</g, "%3C").replace(/>/g, "%3E");
     return encodeURI(url);
 }
-}
